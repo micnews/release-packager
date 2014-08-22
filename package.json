@@ -2,6 +2,10 @@
   "name": "release-packager",
   "version": "0.0.1",
   "description": "Builds node apps",
+  "homepage": "https://github.com/micnews/release-packager",
+  "bugs": {
+    "url": "https://github.com/micnews/release-packager/issues"
+  },
   "main": "index.js",
   "scripts": {
     "test": "node test/test.js"
@@ -26,10 +30,6 @@
     "npm",
     "dedupe"
   ],
-  "author": "Lars-Magnus Skog <ralphtheninja@riseup.net> (http://mic.com/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/micnews/release-packager/issues"
-  },
-  "homepage": "https://github.com/micnews/release-packager"
+  "author": "mic.com",
+  "license": "MIT"
 }
