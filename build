@@ -1,0 +1,118 @@
+#!/bin/bash -x
+
+#
+# Builds from a source repository, commits and pushes to a target repository.
+#
+
+# Where all repositories end up.
+BUILD_ROOT=${1}
+
+# Source repository
+SOURCE_ORIGIN=${2}
+SOURCE_FOLDER=${3}
+SOURCE_REF=${4}
+
+# Target repository
+TARGET_ORIGIN=${5}
+TARGET_FOLDER=${6}
+TARGET_BRANCH=${7}
+
+# True if we should push to target remote or not
+PUSH_TARGET=${8}
+
+# For node-gyp.
+export HOME=`echo ~`
+
+function run {
+    typeset COMMAND="$*"
+    typeset EXIT_CODE
+    eval ${COMMAND}
+    EXIT_CODE=$?
+    if [ ${EXIT_CODE} != 0 ]; then
+        printf "Error : [%d] when executing command: '${COMMAND}'" ${EXIT_CODE}
+        exit ${EXIT_CODE}
+    fi
+}
+
+SCRIPT_FOLDER="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+run "mkdir -p ${BUILD_ROOT}"
+cd ${BUILD_ROOT}
+
+if [ ! -d ${SOURCE_FOLDER} ]; then
+    # No source repo exists. Cloning.
+    run "git clone ${SOURCE_ORIGIN}"
+    cd ${SOURCE_FOLDER}
+else
+    # Updating existing source repo.
+    cd ${SOURCE_FOLDER}
+    run "git fetch origin"
+    run "git remote prune origin"
+fi
+
+run "git reset --hard ${SOURCE_REF}"
+SOURCE_SHA=`git rev-list -1 --abbrev-commit HEAD`
+
+run "rm -rf node_modules"
+
+if [ -f .gitmodules ]; then
+    run "git submodule init"
+    run "git submodule update"
+fi
+
+# npm
+run "npm install --production"
+run "npm dedupe"
+run "npm run build"
+
+cd ..
+
+if [ ! -d "${TARGET_FOLDER}" ]; then
+    # No target repo exists. Cloning.
+    run "git clone --branch ${TARGET_BRANCH} ${TARGET_ORIGIN}"
+    cd ${TARGET_FOLDER}
+else
+    # Updating existing target repo.
+    cd ${TARGET_FOLDER}
+    run "git fetch origin"
+    run "git reset --hard origin/${TARGET_BRANCH}"
+fi
+
+# Remove complete working tree from target repo.
+shopt -s extglob
+run "rm -rf !(.git|.|..)"
+
+# Copy everything but .git folder from source to target repo.
+cd ../${SOURCE_FOLDER}
+run "cp -a `ls -A | grep -v -E '(.git|.gitmodules)$'` ../${TARGET_FOLDER}"
+
+# Remove all .git folders but the top level one.
+cd ../${TARGET_FOLDER}
+run "find . -mindepth 2 -name .git | xargs rm -rf"
+
+# Modify version property in package.json.
+run "${SCRIPT_FOLDER}/version.js ${BUILD_ROOT}/${TARGET_FOLDER}/package.json ${SOURCE_REF} ${SOURCE_SHA}"
+
+# Remove .gitignore files from all modules in node_modules folder.
+run "find node_modules -type f -name '.gitignore' | xargs rm"
+
+# Remove deleted files from git.
+DELETED=`git ls-files --deleted`
+if [ -n "$DELETED" ]; then
+    run "git rm ${DELETED}"
+fi
+
+# Add modified and unstaged files.
+run "git add -f ."
+
+# Commit to target repo.
+run "git commit -m '${USER} built commit: ${SOURCE_REF}, sha: ${SOURCE_SHA}'"
+
+# Push to remote target repo if enabled.
+if [ ${PUSH_TARGET} == "true" ]; then
+    run "git push"
+else
+    echo "== Skipping push."
+fi
+
+echo "== Build complete."
