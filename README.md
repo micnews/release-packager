@@ -14,8 +14,8 @@ Sick of the discussion about if you should check in `node_modules` into git or n
 4. Clone repo B.
 5. Check out a branch to commit to in B.
 6. Wipe working directory in B and copy A's working tree to B.
-7. Find and remove `.gitignore` files and delete them.
-8. Commit and optionally push to B.
+7. Find and delete `.gitignore` files.
+8. Commit changes to B with optional push.
 
 Ideally this module is part of a larger system with webhooks or other things for triggering this appropriately.
 
@@ -67,7 +67,7 @@ Builds an application. Internally `release-packager` have a simple queue system 
 * `'push_target'` *(boolean, default: `false`)*: Set to true if the target should be pushed.
 
 #### `callback`
-Called with an error if the build failed for some reason and also a `done()` callback. This is done to integrate whatever the user wants to do as part of build transaction, perhaps update some database or notify someone about the results before letting release-packager continue grabbing new jobs.
+Called with an error if the build failed and also a `done()` callback. `done()` has to be called when the caller are done processing the build results. This was designed so the caller can do other stuff as part of a build transaction and will prevent consecutive builds causing upgrades during already ongoing upgrades and similar race condition related problems.
 
 ### packager.shutdown(callback)
 Shuts down release-packager.
@@ -78,6 +78,7 @@ Called after all running build jobs are finished.
 ## TODO
 
 * Persist build queue data in `shutdown()` and resume working at startup. Define path to leveldb in options object.
+* Call back with build meta data in `build()`
 
 ## License
 
