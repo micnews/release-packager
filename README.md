@@ -1,5 +1,7 @@
 # smithers
 
+[![Build Status](https://travis-ci.org/micnews/smithers.svg)](https://magnum.travis-ci.com/micnews/smithers)
+
 Sick of the discussion about if you should check in `node_modules` into git or not? Want to check in `node_modules` when deploying your app but don't want to pollute the repository with mumbo jumbo and make all devs angry?
 
 ## Use case
@@ -53,7 +55,7 @@ Creates a new smithers builder instance.
 * `'root'` *(string)*: Path to folder where `smithers` stores the build files and logs. All repositories are cloned into `<root>/build` and all logs end up in `<root>/logs`.
 
 ### smithers.build(opts, callback)
-Builds an application. Internally `smithers` have a simple queue system with separate queues for each application type.
+Builds an application. Internally `smithers` have a simple queue system with separate queues for each application.
 
 #### `options`
 
