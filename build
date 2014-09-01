@@ -56,8 +56,7 @@ SOURCE_SHA=`git rev-list -1 --abbrev-commit HEAD`
 run "rm -rf node_modules"
 
 if [ -f .gitmodules ]; then
-    run "git submodule init"
-    run "git submodule update"
+    run "git submodule update --init"
 fi
 
 # npm
