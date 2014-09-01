@@ -1,6 +1,6 @@
 {
   "name": "release-packager",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Builds node apps",
   "homepage": "https://github.com/micnews/release-packager",
   "bugs": {
