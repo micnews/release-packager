@@ -93,7 +93,7 @@ run "find . -mindepth 2 -name .git | xargs rm -rf"
 run "${SCRIPT_FOLDER}/version.js ${BUILD_ROOT}/${TARGET_FOLDER}/package.json ${SOURCE_REF} ${SOURCE_SHA}"
 
 # Remove .gitignore files from all modules in node_modules folder.
-run "find node_modules -type f -name '.gitignore' | xargs rm"
+run "find node_modules -type f -name '.gitignore' | xargs rm -f"
 
 # Remove deleted files from git.
 DELETED=`git ls-files --deleted`
